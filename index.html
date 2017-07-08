@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Memory Game</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="./CSS/myStyle.css">
+
+<script>
+	// Initial values
+	var difficulty = 12;
+	var currentTheme = 1;
+	var nextTheme = 1;
+	var flippedCards = 0;
+	var memory_array = ['1','1','2','2','3','3','4','4','5','5','6','6','7','7','8','8','9','9','10','10','11','11','12','12'];
+	var cardValues = [];
+	var cardIDs = [];	
+	var wrongGuesses = 0;
+
+	// Card shuffeling, swapping the 'i'th member with a randomly-selected one.
+	Array.prototype.memory_card_shuffle = function(){
+	    var i = difficulty, j, temp;
+	    while(--i > 0){
+	        j = Math.floor(Math.random() * (i+1));
+	        temp = this[j];
+	        this[j] = this[i];
+	        this[i] = temp;
+	    }
+	}
+
+	// Board initialization
+	function newBoard(difficulty,theme){
+		// Theme only changes when a new board is called in order to keep card images' path in tact
+		currentTheme = nextTheme;
+		flippedCards = 0;
+		var output = '';
+	    memory_array.memory_card_shuffle();
+	    // Goes over a number of cards in accordance to difficulty
+		for(var i = 0; i < difficulty; i++){
+			// Card's background is selected in accordance to theme by naming it as the appropriate image folder
+			output += '<div id="card_'+i+'" class="card" style=background:url(IMG/'+currentTheme+'/texture.png) no-repeat" onclick="memoryFlipcard(this,\''+memory_array[i]+'\')"></div>';
+		}
+
+		document.getElementById("gameBoard").innerHTML = output;
+
+		// In order to implement the different "geek out" number of cards while still maintaining a rectangular shape,
+		// a check modifies the board's bootstrap class name accordingly
+
+		// Initial required 3*4 game board matrix
+		if (difficulty == 12){
+			document.getElementById("gameBoard").className = "col-md-7 col-md-offset-3";
+		}
+
+		else if (difficulty == 18){
+			document.getElementById("gameBoard").className = "col-md-9 col-md-offset-2";
+		}
+
+		else if (difficulty == 24){
+			document.getElementById("gameBoard").className = "col-md-9 col-md-offset-2";
+		}
+	}
+
+	// Both the theme and the difficulty will only change when the new board function is called
+	function changeTheme(){
+		nextTheme = document.getElementById("themes").value;
+	}
+
+	function changeDifficulty(){
+		difficulty = document.getElementById("difficulties").value;
+	}
+
+	// card flipping
+	function memoryFlipcard(card,val){
+		if(cardValues.length < 2){
+			// Card's background is selected in accordance to theme by naming it as the appropriate image folder
+			card.style.background = "url('IMG/"+currentTheme+"/" + val + ".png') no-repeat";
+			card.style.backgroundSize = "contain";
+			if(cardValues.length == 0){
+				cardValues.push(val);
+				cardIDs.push(card.id);
+			} else if(cardValues.length == 1){
+				cardValues.push(val);
+				cardIDs.push(card.id);
+				// In case of a match
+				if(cardValues[0] == cardValues[1]){
+					flippedCards += 2;
+					// Clear arrays
+					cardValues = [];
+	            	cardIDs = [];
+					// If all cards are flipped
+					if(flippedCards == difficulty){
+						//Notifies the user of his wrong guesses and asks whether he wants to play again
+						if (confirm("You won! You has a total of " + wrongGuesses + " wrong guesses. Play another round?") == true){;
+						document.getElementById('gameBoard').innerHTML = "";
+						newBoard(difficulty,theme);
+						}
+					}
+				} 
+				// In case of a mismatch
+				else {
+					function flip2Back(){
+						wrongGuesses += 1;
+						console.log(wrongGuesses);
+					    // Flip the 2 cards back over
+					    var card_1 = document.getElementById(cardIDs[0]);
+					    var card_2 = document.getElementById(cardIDs[1]);
+					    // Restore the cards' original background
+					    card_1.style.background = "url('IMG/"+currentTheme+"/texture.png') no-repeat";
+					    card_2.style.background = "url('IMG/"+currentTheme+"/texture.png') no-repeat";
+					    // Clear arrays
+					    cardValues = [];
+	            	    cardIDs = [];
+					}
+					// Show the wrong result for a second and make the other cards unclickable for the duration
+					document.getElementById("gameBoard").onclick = function() {return false;} 
+					setTimeout(flip2Back, 1000);
+				}
+			}
+		}
+	}
+</script>
+</head>
+<body>
+	<div class="container">
+			<div id="header" class="col-md-8 col-md-offset-2">
+				<select class="col-md-2 vcenter" id="themes" onchange="changeTheme()">
+						<option value="1" selected">Talisman</option>
+						<option value="2">Animals</option>
+						<option value="3"">Munchkin</option>
+				</select>
+				<select class="col-md-2 col-md-offset-1 vcenter" id="difficulties" onchange="changeDifficulty()">
+						<option value="12" selected>Easy</option>
+						<option value="18">Medium</option>
+						<option value="24">Hard</option>
+				</select>
+				<button class="col-md-2 col-md-offset-1 vcenter" onclick="newBoard(difficulty,nextTheme)">New Game</button>
+			</div>
+			<div id="gameBoard" class="col-md-9 col-md-offset-2"></div>
+			<script>newBoard(difficulty,currentTheme);</script>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+body{
+		background:url(../IMG/bg.jpg) no-repeat;
+		background-size: 100%;
+}
+#header{
+	margin-top: 5px;
+	margin-bottom: 5px;
+	text-align: center;
+	
+}
+.card{
+	height: 168px;
+    width: 120px;
+	margin:5px;
+	cursor:pointer;
+	float:left;
+
+}
+.vcenter {
+display: inline-block;
+vertical-align: middle;
+float: none;
+}
